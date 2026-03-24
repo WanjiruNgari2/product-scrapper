@@ -3,6 +3,9 @@
 A powerful web scraper that extracts mobile phone listings from Jumia Kenya, 
 stores them in Neon PostgreSQL, and provides a beautiful dashboard for viewing and analyzing products.
 
+## live link:
+https://jumia-scrapper-dv1d.onrender.com/
+
 ## ✨ Features
 
 - 🕷️ **Web Scraping** - Extracts product titles, prices, images, ratings, and unique product URLs
