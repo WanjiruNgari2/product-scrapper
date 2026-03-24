@@ -1,6 +1,8 @@
 const fs = require('fs');
 const puppeteer = require('puppeteer');
 const { neon } = require('@neondatabase/serverless');
+const os = require('os');
+const path = require('path');
 require('dotenv').config({ path: './.env' });  // loads .env
 
 // 2. Neon setup 
@@ -12,20 +14,36 @@ if (!process.env.DATABASE_URL) {
 
 const sql = neon(process.env.DATABASE_URL);
 
+// Log environment for debugging (optional, helps with Render deployment)
+console.log('Running in environment:', process.env.NODE_ENV || 'development');
+if (process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD) {
+  console.log('Using system Chromium for Puppeteer');
+}
 
 async function scrapeJumiaListing(url) {
-
-  const browser = await puppeteer.launch({
-    headless: true,  // switch to true for production/demo runs
-    args: ['--no-sandbox', '--disable-setuid-sandbox']  // helps on some hosts
+  // FIX 1: Move browser declaration outside try for proper cleanup
+  let browser = null;
+  
+  // FIX 2: Add Render-compatible args and executablePath
+  browser = await puppeteer.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',  // Helps with limited memory on Render
+      '--disable-accelerated-2d-canvas',
+      '--disable-gpu'
+    ],
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined  //  Works on both local and Render
   });
 
   try {
     const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ...'); // full UA string
+    // FIX 4: Complete user agent (removed the "...")
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
-    await page.waitForSelector('article', { timeout: 45000 }); // your working broad selector
+    await page.waitForSelector('article', { timeout: 45000 }); 
 
     const productHandles = await page.$$('article');
     console.log(`Found ${productHandles.length} product elements`);
@@ -44,7 +62,7 @@ async function scrapeJumiaListing(url) {
 
       let productUrl = null;
       try {
-        // Try specific selectors one by one and log which works
+        // Try specific selectors one by one
         let selectors = [
           'a.core',
           'a[href^="/"]',
@@ -66,15 +84,13 @@ async function scrapeJumiaListing(url) {
               return href.trim() || null;
             });
             if (productUrl) {
-              // console.log(`Found link with selector "${sel}": ${productUrl}`);
               break;
             }
           }
         }
       } catch (err) {
-        console.log('Link extraction error:', err.message);
+        // Silent fail
       }
-
 
       if (title && price && productUrl) {
         items.push({
@@ -84,13 +100,10 @@ async function scrapeJumiaListing(url) {
           image_url: img || null,
           rating: rating || null,
           reviews_count: reviews || null,
-          scraped_url: productUrl,          // unique per product
+          scraped_url: productUrl,
           scraped_at: new Date().toISOString()
         });
-      } else {
-        // console.log(`Skipped product: title=${title}, price=${price}, url=${productUrl}`);
       }
-
     }
 
     console.log(`Scraped ${items.length} products from ${url}`);
@@ -99,22 +112,17 @@ async function scrapeJumiaListing(url) {
     console.error('Scrape error:', err.message);
     return [];
   } finally {
-    await browser.close();
+    //  Ensure browser always closes
+    if (browser) {
+      await browser.close();
+    }
   }
 }
-
-// // Test it
-// (async () => {
-//   const data = await scrapeJumiaListing('https://www.jumia.co.ke/mobile-phones/');
-//   console.log(data.slice(0, 3));  // first 3 for quick check
-// })();
-
-
 
 async function saveProductsToNeon(products) {
   if (products.length === 0) {
     console.log('No products to save');
-    return;
+    return { savedCount: 0, errorCount: 0 };  // Return counts for API
   }
 
   let savedCount = 0;
@@ -142,31 +150,30 @@ async function saveProductsToNeon(products) {
   }
 
   console.log(`Processed ${products.length} products → ${savedCount} saved/updated, ${errorCount} failed`);
+  return { savedCount, errorCount };  // FIX 7: Return counts
 }
 
-// 5. Test block (bottom, for now)
-// (async () => {
-//   try {
-//     const url = 'https://www.jumia.co.ke/mobile-phones/';
-//     const scrapedData = await scrapeJumiaListing(url);
+// FIX 8: Only run test when file is executed directly (not when imported)
+if (require.main === module) {
+  (async () => {
+    try {
+      const url = 'https://www.jumia.co.ke/mobile-phones/';
+      const scrapedData = await scrapeJumiaListing(url);
 
-//     if (scrapedData.length > 0) {
-//       await saveProductsToNeon(scrapedData);
-//       console.log('First few saved:', scrapedData.slice(0, 3));
-//     } else {
-//       console.log('No products scraped – check selectors or page load');
-//     }
-//   } catch (err) {
-//     console.error('Test run failed:', err);
-//   }
-//   // Don't close pool here if planning API later
-//   // await pool.end();  // only at end of script if no server
-// })();
-
+      if (scrapedData.length > 0) {
+        await saveProductsToNeon(scrapedData);
+        console.log('First few saved:', scrapedData.slice(0, 3));
+      } else {
+        console.log('No products scraped – check selectors or page load');
+      }
+    } catch (err) {
+      console.error('Test run failed:', err);
+    }
+  })();
+}
 
 module.exports = {
   scrapeJumiaListing,
   saveProductsToNeon,
   sql
 };
-
