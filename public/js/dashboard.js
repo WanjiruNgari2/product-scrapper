@@ -13,7 +13,7 @@
 
         async function loadStats() {
             try {
-                const response = await fetch('http://localhost:3000/products');
+                const response = await fetch('/products');
                 const data = await response.json();
                 document.getElementById('totalProducts').innerText = data.pagination?.total || data.data?.length || 0;
                 
@@ -28,7 +28,7 @@
 
         async function loadProducts() {
             try {
-                let url = `http://localhost:3000/products?limit=50&offset=${currentPage * 50}`;
+                let url = `/products?limit=50&offset=${currentPage * 50}`;
                 if (currentSearch) {
                     url += `&search=${encodeURIComponent(currentSearch)}`;
                 }
@@ -103,7 +103,7 @@
             showAlert('Starting scrape... This may take 30-60 seconds', 'info');
             
             try {
-                const response = await fetch('http://localhost:3000/scrape', {
+                const response = await fetch('/scrape', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -141,7 +141,7 @@
         }
 
         function exportCSV() {
-            window.open('http://localhost:3000/products/export', '_blank');
+            window.open('/products/export', '_blank');
             showAlert('CSV export started!', 'success');
         }
 
