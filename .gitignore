@@ -1,5 +1,29 @@
+# Dependencies
 node_modules/
-tmp/
+
+# Environment variables (CRITICAL - contains database password!)
 .env
-*.log                  # Log files
-puppeteer_*            # Puppeteer temp profiles
+.env.local
+.env.*.local
+
+# Temporary files
+tmp/
+puppeteer_*
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Data files (optional - you may want to keep these)
+results.csv
+*.csv
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+*.swp
+*.swo
+*~

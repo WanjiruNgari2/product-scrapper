@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jumia Product Scraper - Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕷️ Jumia Product Scraper</h1>
+            <p>Real-time product tracking & analytics dashboard</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Products</h3>
+                <div class="value" id="totalProducts">-</div>
+                <div class="sub">In database</div>
+            </div>
+            <div class="stat-card">
+                <h3>Last Scrape</h3>
+                <div class="value" id="lastScrape">-</div>
+                <div class="sub">Most recent update</div>
+            </div>
+            <div class="stat-card">
+                <h3>Scraper Status</h3>
+                <div class="value">
+                    <span id="scraperStatus" class="status-badge status-idle">IDLE</span>
+                </div>
+                <div class="sub">Click scrape to start</div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-primary" onclick="startScrape()" id="scrapeBtn">
+                🚀 Start Scraping
+            </button>
+            <button class="btn btn-secondary" onclick="refreshProducts()">
+                🔄 Refresh Data
+            </button>
+            <button class="btn btn-danger" onclick="exportCSV()">
+                📥 Export CSV
+            </button>
+            <input type="text" class="search-box" placeholder="Search products..." id="searchInput" onkeyup="searchProducts()">
+        </div>
+
+        <div id="alert" style="display: none;"></div>
+
+        <div class="products-section">
+            <h2>📦 Products (Latest 50)</h2>
+            <div class="table-container">
+                <table id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Rating</th>
+                            <th>Scraped</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsBody">
+                        <tr><td colspan="5" class="loading">Loading products...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+    <script src="/js/dashboard.js"></script>
+
+</body>
+</html>
