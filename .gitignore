@@ -27,3 +27,5 @@ results.csv
 *.swp
 *.swo
 *~
+
+*.csv
