@@ -3,8 +3,9 @@
 A powerful web scraper that extracts mobile phone listings from Jumia Kenya, 
 stores them in Neon PostgreSQL, and provides a beautiful dashboard for viewing and analyzing products.
 
-## live link:
-https://jumia-scrapper-dv1d.onrender.com/
+## Live Link:
+https://jumia-scrapper-dv1d.onrender.com/ 
+ ⚠️ Note: This app is hosted on Render's free tier. It may take up to 60 seconds to load on first visit — please be patient!
 
 ## ✨ Features
 
@@ -117,7 +118,7 @@ Puppeteer team for the amazing scraping library
 1. **Clone the repository**
    ```bash
    git clone https://github.com/yourusername/jumia-product-scraper.git
-   cd jumia-product-scraper
+   cd      jumia-product-scraper
 
 
 2. **Install dependencies**
