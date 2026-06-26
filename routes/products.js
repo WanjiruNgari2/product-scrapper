@@ -56,7 +56,18 @@ async function exportProducts(req, res) {
     if (rows.length === 0) {
       return res.status(404).json({ error: 'No products to export' });
     }
-    
+
+    // Check if the user wants JSON or CSV
+    const format = req.query.format || 'csv';
+
+    if (format === 'json') {
+      // JSON export
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename=products_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`);
+      return res.send(JSON.stringify(rows, null, 2));
+    }
+
+    // Default: CSV export
     const headers = ['name', 'current_price', 'old_price', 'image_url', 'rating', 'reviews_count', 'scraped_at'];
     const csvRows = rows.map(row => 
       headers.map(header => {
@@ -70,6 +81,7 @@ async function exportProducts(req, res) {
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename=products_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`);
     res.send(csv);
+
   } catch (err) {
     console.error('Export error:', err);
     res.status(500).json({ error: err.message });

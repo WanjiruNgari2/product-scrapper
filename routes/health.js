@@ -13,7 +13,8 @@ function home(req, res) {
       'GET /health': 'Health check',
       'GET /products': 'List products',
       'POST /scrape': 'Trigger scrape',
-      'GET /products/export': 'Download CSV'
+      'GET /products/export': 'Download as CSV',
+      'GET /products/export?format=json': 'Download as JSON'
     }
   });
 }
